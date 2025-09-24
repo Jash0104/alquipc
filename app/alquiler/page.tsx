@@ -147,7 +147,7 @@ export default function Formulario() {
                       <button 
                         onClick={() => handleEquiposChange(false)}
                         disabled={equipos <= MIN_EQUIPOS}
-                        className="w-10 h-10 bg-gray-100 hover:bg-blue-100 rounded-lg flex items-center justify-center font-bold text-gray-700 hover:text-blue-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-100 disabled:hover:text-gray-700"
+                        className="w-10 h-10 bg-gray-100 hover:bg-blue-100 rounded-lg flex items-center justify-center font-bold text-gray-700 hover:text-blue-600 transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-100 disabled:hover:text-gray-700"
                       >
                         -
                       </button>
@@ -160,7 +160,7 @@ export default function Formulario() {
                       />
                       <button 
                         onClick={() => handleEquiposChange(true)}
-                        className="w-10 h-10 bg-gray-100 hover:bg-blue-100 rounded-lg flex items-center justify-center font-bold text-gray-700 hover:text-blue-600 transition-colors duration-200"
+                        className="w-10 h-10 bg-gray-100 hover:bg-blue-100 rounded-lg flex items-center justify-center font-bold text-gray-700 hover:text-blue-600 transition-colors duration-200 cursor-pointer"
                       >
                         +
                       </button>
@@ -176,7 +176,7 @@ export default function Formulario() {
                       <button 
                         onClick={() => handleDiasChange(false)}
                         disabled={dias <= MIN_DIAS}
-                        className="w-10 h-10 bg-gray-100 hover:bg-blue-100 rounded-lg flex items-center justify-center font-bold text-gray-700 hover:text-blue-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-100 disabled:hover:text-gray-700"
+                        className="w-10 h-10 bg-gray-100 hover:bg-blue-100 rounded-lg flex items-center justify-center font-bold text-gray-700 hover:text-blue-600 transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-100 disabled:hover:text-gray-700"
                       >
                         -
                       </button>
@@ -189,7 +189,7 @@ export default function Formulario() {
                       />
                       <button 
                         onClick={() => handleDiasChange(true)}
-                        className="w-10 h-10 bg-gray-100 hover:bg-blue-100 rounded-lg flex items-center justify-center font-bold text-gray-700 hover:text-blue-600 transition-colors duration-200"
+                        className="w-10 h-10 bg-gray-100 hover:bg-blue-100 rounded-lg flex items-center justify-center font-bold text-gray-700 hover:text-blue-600 transition-colors duration-200 cursor-pointer"
                       >
                         +
                       </button>
@@ -227,12 +227,12 @@ export default function Formulario() {
                                   {service.description}
                                 </div>
                               </div>
-                              <div className={`absolute top-3 right-3 w-5 h-5 rounded-full border-2 bg-white flex items-center justify-center ${
-                                isSelected ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
+                              <div className={`absolute top-3 right-3 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
+                                isSelected ? 'border-blue-500 bg-blue-500' : 'border-gray-300 bg-white'
                               }`}>
-                                <div className={`w-2 h-2 rounded-full bg-white transition-opacity duration-200 ${
-                                  isSelected ? 'opacity-100' : 'opacity-0'
-                                }`}></div>
+                                {isSelected && (
+                                  <div className="w-2 h-2 rounded-full bg-white"></div>
+                                )}
                               </div>
                             </div>
                           </label>
@@ -267,7 +267,7 @@ export default function Formulario() {
                   </div>
 
                   {/* Botón continuar */}
-                  <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-semibold transition-colors duration-200">
+                  <button className="w-full cursor-pointer bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-semibold transition-colors duration-200">
                     Continuar con datos de contacto
                   </button>
                 </div>
