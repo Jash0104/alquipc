@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function Home() {
   return (
@@ -30,24 +31,16 @@ export default function Home() {
 
             {/* Navigation */}
             <div className="hidden md:flex items-center gap-8">
-              <a href="#" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
-                Servicios
-              </a>
-              <a href="#" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
-                Precios
-              </a>
-              <a href="#" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
-                Contacto
-              </a>
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200">
-                Solicita tus equipos
-              </button>
+              <Link href="/alquiler">
+                <button className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200">
+                  Solicita tus equipos
+                </button>
+              </Link>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
       <div className="max-w-7xl mx-auto px-6 md:px-8">
         <div className="min-h-[calc(100vh-80px)] flex items-center py-12 md:py-20">
           <div className="w-full flex flex-col md:flex-row items-center justify-between gap-12 md:gap-16">
@@ -90,16 +83,18 @@ export default function Home() {
 
             {/* Right Image */}
             <div className="flex-1 relative hidden md:block">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-500/80 rounded-full transform scale-y-150"></div>
               <div className="relative w-full max-w-2xl mx-auto flex items-center justify-center">
-                <Image
-                  src="/image.png"
-                  alt="Tecnología y conectividad - ALQUIPC"
-                  width={600}
-                  height={400}
-                  className="w-full h-auto object-contain relative z-10"
-                  priority
-                />
+                  <div className="group w-full max-w-2xl mx-auto flex items-center justify-center">
+                    <Image
+                      src="/image.png"
+                      alt="Tecnología y conectividad - ALQUIPC"
+                      width={600}
+                      height={400}
+                    className="w-full h-auto object-contain cursor-pointer relative z-10 transform transition-all duration-500 group-hover:scale-105 group-hover:-rotate-1"
+                      priority
+                    />
+                  </div>
+                
               </div>
             </div>
             
