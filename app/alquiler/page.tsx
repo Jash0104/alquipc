@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 type ServiceType = 'city' | 'outside' | 'establishment';
 
@@ -20,41 +21,73 @@ const serviceOptions: ServiceOption[] = [
 
 const BASE_PRICE = 35000;
 const MIN_EQUIPOS = 2;
+const MAX_EQUIPOS = 100;
 const MIN_DIAS = 1;
+const MAX_DIAS = 30;
 
 export default function Formulario() {
+  const router = useRouter();
+  
   // Estados del formulario
   const [equipos, setEquipos] = useState<number>(MIN_EQUIPOS);
   const [dias, setDias] = useState<number>(MIN_DIAS);
   const [serviceType, setServiceType] = useState<ServiceType>('city');
   const [totalEstimado, setTotalEstimado] = useState<number>(0);
 
-  // Calcular total estimado automáticamente
+  // Estados de validación
+  const isEquiposValid = equipos >= MIN_EQUIPOS && equipos <= MAX_EQUIPOS;
+  const isDiasValid = dias >= MIN_DIAS && dias <= MAX_DIAS;
+  const isFormValid = isEquiposValid && isDiasValid;
+
+  // Calcular total estimado automáticamente (solo con valores válidos)
   useEffect(() => {
-    const selectedService = serviceOptions.find(service => service.id === serviceType);
-    const multiplier = selectedService?.multiplier || 1.0;
-    const subtotal = equipos * dias * BASE_PRICE;
-    const total = subtotal * multiplier;
-    setTotalEstimado(total);
-  }, [equipos, dias, serviceType]);
+    if (isEquiposValid && isDiasValid) {
+      const selectedService = serviceOptions.find(service => service.id === serviceType);
+      const multiplier = selectedService?.multiplier || 1.0;
+      const subtotal = equipos * dias * BASE_PRICE;
+      const total = subtotal * multiplier;
+      setTotalEstimado(total);
+    }
+  }, [equipos, dias, serviceType, isEquiposValid, isDiasValid]);
 
   // Funciones para manejar cambios
   const handleEquiposChange = (increment: boolean) => {
     setEquipos(prev => {
       const newValue = increment ? prev + 1 : prev - 1;
-      return Math.max(MIN_EQUIPOS, newValue);
+      return Math.max(MIN_EQUIPOS, Math.min(MAX_EQUIPOS, newValue));
     });
   };
 
   const handleDiasChange = (increment: boolean) => {
     setDias(prev => {
       const newValue = increment ? prev + 1 : prev - 1;
-      return Math.max(MIN_DIAS, newValue);
+      return Math.max(MIN_DIAS, Math.min(MAX_DIAS, newValue));
     });
   };
 
   const handleServiceChange = (newServiceType: ServiceType) => {
     setServiceType(newServiceType);
+  };
+
+  // Manejar navegación a datos de contacto
+  const handleContinuar = () => {
+    if (isFormValid) {
+      // Crear objeto con datos del alquiler
+      const rentalData = {
+        equipos,
+        dias,
+        serviceType,
+        totalEstimado,
+        serviceName: serviceOptions.find(s => s.id === serviceType)?.name || '',
+        serviceMultiplier: serviceOptions.find(s => s.id === serviceType)?.multiplier || 1.0
+      };
+      
+      // Guardar en sessionStorage para pasar a la siguiente página
+      sessionStorage.setItem('rentalData', JSON.stringify(rentalData));
+      
+      // Navegar a la página de contacto
+      router.push('/alquiler/contacto');
+    }
   };
 
   // Formatear precio en pesos colombianos
@@ -123,7 +156,7 @@ export default function Formulario() {
         </div>
 
         {/* Right Side - Formulario */}
-          <div className="w-full max-w-3xl">
+          <div className="w-full max-w-4xl">
             <div className="bg-white rounded-2xl shadow-2xl p-8 flex flex-1 flex-col h-full">
               
               {/* Header del formulario */}
@@ -154,18 +187,29 @@ export default function Formulario() {
                       <input 
                         type="number" 
                         value={equipos} 
-                        onChange={(e) => setEquipos(Math.max(MIN_EQUIPOS, parseInt(e.target.value) || MIN_EQUIPOS))}
-                        className="flex-1 text-center border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg px-4 py-2 font-semibold text-gray-800 bg-white"
+                        onChange={(e) => setEquipos(parseInt(e.target.value) || 0)}
+                        className={`flex-1 text-center border-2 rounded-lg px-4 py-2 font-semibold bg-white transition-colors duration-200 focus-visible:outline-none ${
+                          isEquiposValid 
+                            ? 'border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-gray-800' 
+                            : 'border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 text-red-700 bg-red-50'
+                        }`}
                         min={MIN_EQUIPOS}
+                        max={MAX_EQUIPOS}
                       />
                       <button 
                         onClick={() => handleEquiposChange(true)}
-                        className="w-10 h-10 bg-gray-100 hover:bg-blue-100 rounded-lg flex items-center justify-center font-bold text-gray-700 hover:text-blue-600 transition-colors duration-200 cursor-pointer"
+                        disabled={equipos >= MAX_EQUIPOS}
+                        className="w-10 h-10 bg-gray-100 hover:bg-blue-100 rounded-lg flex items-center justify-center font-bold text-gray-700 hover:text-blue-600 transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-100 disabled:hover:text-gray-700"
                       >
                         +
                       </button>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">Mínimo {MIN_EQUIPOS} equipos</p>
+                    <p className={`text-xs mt-1 ${isEquiposValid ? 'text-gray-500' : 'text-red-500'}`}>
+                      {isEquiposValid 
+                        ? `Mínimo ${MIN_EQUIPOS} equipos - Máximo ${MAX_EQUIPOS} equipos`
+                        : `⚠️ Debe estar entre ${MIN_EQUIPOS} y ${MAX_EQUIPOS} equipos`
+                      }
+                    </p>
                   </div>
 
                   <div>
@@ -183,18 +227,29 @@ export default function Formulario() {
                       <input 
                         type="number" 
                         value={dias} 
-                        onChange={(e) => setDias(Math.max(MIN_DIAS, parseInt(e.target.value) || MIN_DIAS))}
-                        className="flex-1 text-center border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg px-4 py-2 font-semibold text-gray-800 bg-white"
+                        onChange={(e) => setDias(parseInt(e.target.value) || 0)}
+                        className={`flex-1 text-center border-2 rounded-lg px-4 py-2 font-semibold bg-white transition-colors duration-200 focus-visible:outline-none ${
+                          isDiasValid 
+                            ? 'border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-gray-800' 
+                            : 'border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 text-red-700 bg-red-50'
+                        }`}
                         min={MIN_DIAS}
+                        max={MAX_DIAS}
                       />
                       <button 
                         onClick={() => handleDiasChange(true)}
-                        className="w-10 h-10 bg-gray-100 hover:bg-blue-100 rounded-lg flex items-center justify-center font-bold text-gray-700 hover:text-blue-600 transition-colors duration-200 cursor-pointer"
+                        disabled={dias >= MAX_DIAS}
+                        className="w-10 h-10 bg-gray-100 hover:bg-blue-100 rounded-lg flex items-center justify-center font-bold text-gray-700 hover:text-blue-600 transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-100 disabled:hover:text-gray-700"
                       >
                         +
                       </button>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">Mínimo {MIN_DIAS} día</p>
+                    <p className={`text-xs mt-1 ${isDiasValid ? 'text-gray-500' : 'text-red-500'}`}>
+                      {isDiasValid 
+                        ? `Mínimo ${MIN_DIAS} día - Máximo ${MAX_DIAS} días`
+                        : `⚠️ Debe estar entre ${MIN_DIAS} y ${MAX_DIAS} días`
+                      }
+                    </p>
                   </div>
 
                   <div>
@@ -245,30 +300,47 @@ export default function Formulario() {
 
                 <div className="space-y-6 pt-6">
                   {/* Resumen de precio */}
-                  <div className="bg-blue-50 rounded-lg p-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-medium text-gray-700">Total estimado:</span>
-                      <span className="text-2xl font-bold text-blue-600">{formatPrice(totalEstimado)}</span>
-                    </div>
-                    <div className="text-xs text-gray-600 space-y-1">
-                      <div className="flex justify-between">
-                        <span>Subtotal:</span>
-                        <span>{equipos} equipos × {dias} días × {formatPrice(BASE_PRICE)} = {formatPrice(equipos * dias * BASE_PRICE)}</span>
-                      </div>
-                      {serviceType !== 'city' && (
-                        <div className="flex justify-between">
-                          <span>Ajuste por servicio:</span>
-                          <span className={serviceType === 'outside' ? 'text-orange-600' : 'text-green-600'}>
-                            {serviceType === 'outside' ? '+5%' : '-5%'} = {formatPrice(totalEstimado - (equipos * dias * BASE_PRICE))}
-                          </span>
+                  <div className={`rounded-lg p-4 ${isEquiposValid && isDiasValid ? 'bg-blue-50' : 'bg-gray-100'}`}>
+                    {isEquiposValid && isDiasValid ? (
+                      <>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="font-medium text-gray-700">Total estimado:</span>
+                          <span className="text-2xl font-bold text-blue-600">{formatPrice(totalEstimado)}</span>
                         </div>
-                      )}
-                    </div>
+                        <div className="text-xs text-gray-600 space-y-1">
+                          <div className="flex justify-between">
+                            <span>Subtotal:</span>
+                            <span>{equipos} equipos × {dias} días × {formatPrice(BASE_PRICE)} = {formatPrice(equipos * dias * BASE_PRICE)}</span>
+                          </div>
+                          {serviceType !== 'city' && (
+                            <div className="flex justify-between">
+                              <span>Ajuste por servicio:</span>
+                              <span className={serviceType === 'outside' ? 'text-orange-600' : 'text-green-600'}>
+                                {serviceType === 'outside' ? '+5%' : '-5%'} = {formatPrice(totalEstimado - (equipos * dias * BASE_PRICE))}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-center">
+                        <span className="font-medium text-gray-500">⚠️ Corrige los valores para ver el precio</span>
+                        <p className="text-xs text-gray-400 mt-1">Los valores de equipos y días deben estar en el rango válido</p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Botón continuar */}
-                  <button className="w-full cursor-pointer bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-semibold transition-colors duration-200">
-                    Continuar con datos de contacto
+                  <button 
+                    onClick={handleContinuar}
+                    disabled={!isFormValid}
+                    className={`w-full py-3 px-4 rounded-lg font-semibold transition-all duration-200 ${
+                      isFormValid 
+                        ? 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer hover:shadow-lg' 
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    {isFormValid ? 'Continuar con datos de contacto' : 'Corrige los valores para continuar'}
                   </button>
                 </div>
               </div>
