@@ -72,16 +72,15 @@ export default function ContactoPage() {
 
   const handleSubmit = () => {
     if (isFormValid && rentalData) {
-      // Aquí se procesaría el alquiler completo
-      console.log('Datos del alquiler:', rentalData);
-      console.log('Datos de contacto:', contactData);
+      // Guardar datos de contacto en sessionStorage
+      const completeData = {
+        ...rentalData,
+        contacto: contactData
+      };
+      sessionStorage.setItem('completeRentalData', JSON.stringify(completeData));
       
-      // Por ahora, mostrar mensaje de éxito
-      alert('¡Solicitud de alquiler enviada exitosamente! Recibirás la factura por email.');
-      
-      // Limpiar sessionStorage y redirigir
-      sessionStorage.removeItem('rentalData');
-      router.push('/');
+      // Navegar a la promoción de días adicionales
+      router.push('/alquiler/promocion-dias');
     }
   };
 
